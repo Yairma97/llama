@@ -1736,6 +1736,38 @@ llama-index-core = ">=0.12.0,<0.13.0"
 llama-parse = ">=0.5.0"
 
 [[package]]
+name = "llama-index-storage-docstore-redis"
+version = "0.3.0"
+description = "llama-index docstore redis integration"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "llama_index_storage_docstore_redis-0.3.0-py3-none-any.whl", hash = "sha256:38c2b86e4dce5b90fd863140a85812139af0afb757283e4530da8e7898509db0"},
+    {file = "llama_index_storage_docstore_redis-0.3.0.tar.gz", hash = "sha256:ba93e725031586e057ccececcc3aeeace38786f3809c0a657487268dd53a9cbc"},
+]
+
+[package.dependencies]
+llama-index-core = ">=0.12.0,<0.13.0"
+llama-index-storage-kvstore-redis = ">=0.3.0,<0.4.0"
+
+[[package]]
+name = "llama-index-storage-kvstore-redis"
+version = "0.3.0"
+description = "llama-index kvstore redis integration"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "llama_index_storage_kvstore_redis-0.3.0-py3-none-any.whl", hash = "sha256:2e745d89d6cdbd64b570507ffbf0617bca982e97c2b787ad20ff7d9d0ac2f7d8"},
+    {file = "llama_index_storage_kvstore_redis-0.3.0.tar.gz", hash = "sha256:f1e0d38f4d32104eccd2862dd10694075b0453e556d9adb2b3a1df8ca7172e59"},
+]
+
+[package.dependencies]
+llama-index-core = ">=0.12.0,<0.13.0"
+redis = ">=5.0.1,<6.0.0"
+
+[[package]]
 name = "llama-index-vector-stores-milvus"
 version = "0.5.0"
 description = "llama-index vector_stores milvus integration"
@@ -3348,6 +3380,22 @@ files = [
 ]
 
 [[package]]
+name = "redis"
+version = "5.2.1"
+description = "Python client for Redis database and key-value store"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "redis-5.2.1-py3-none-any.whl", hash = "sha256:ee7e1056b9aea0f04c6c2ed59452947f34c4940ee025f5dd83e6a6418b6989e4"},
+    {file = "redis-5.2.1.tar.gz", hash = "sha256:16f2e22dff21d5125e8481515e386711a34cbec50f0e44413dd7d9c060a54e0f"},
+]
+
+[package.extras]
+hiredis = ["hiredis (>=3.0.0)"]
+ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==23.2.1)", "requests (>=2.31.0)"]
+
+[[package]]
 name = "regex"
 version = "2024.11.6"
 description = "Alternative regular expression module, to replace re."
@@ -4739,4 +4787,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "3bdc13a0a5dade04f18310f8c9dd56d930e30515b03190fa96e3a3574b6867d3"
+content-hash = "eb741d274db97a9c784a90ca948f21d618f2a2a4be3dc6d98d071a510f4d8dbe"
