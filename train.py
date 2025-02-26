@@ -6,6 +6,7 @@ import pstats
 import sys
 import textwrap
 
+import dotenv
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext, Settings, Document
 from llama_index.core.ingestion import IngestionPipeline, IngestionCache, DocstoreStrategy
 from llama_index.core.node_parser import SentenceSplitter, SimpleFileNodeParser
@@ -21,57 +22,23 @@ from typing import List
 from llama_index.vector_stores.milvus.utils import BaseSparseEmbeddingFunction
 import nest_asyncio
 
-nest_asyncio.apply()
+from embeddingfunction import ExampleEmbeddingFunction
 
-OPENAI_API_KEY = 'sk-wNDMy7OZEz18JiPiu2GXwhnSn5FDBnhW5V8itYzDJvq5FVeY'
-OPENAI_API_BASE = 'https://api.kksj.org/v1'
-os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
-os.environ['OPENAI_API_BASE'] = OPENAI_API_BASE
-os.environ["GRPC_ENABLE_FORK_SUPPORT"] = "FALSE"
-os.environ["TOKENIZERS_PARALLELISM"] = "FALSE"
-os.environ["EMBEDDING_MODEL"] = "/Volumes/TiPlus7100/Models/bge-m3"
+nest_asyncio.apply()
+dotenv.load_dotenv()
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-
-class ExampleEmbeddingFunction(BaseSparseEmbeddingFunction):
-    def __init__(self):
-        self.model = BGEM3FlagModel(os.getenv("EMBEDDING_MODEL"), use_fp16=False)
-
-    def encode_queries(self, queries: List[str]):
-        outputs = self.model.encode(
-            queries,
-            return_dense=True,
-            return_sparse=True,
-        )["lexical_weights"]
-        return [self._to_standard_dict(output) for output in outputs]
-
-    def encode_documents(self, documents: List[str]):
-        outputs = self.model.encode(
-            documents,
-            return_dense=True,
-            return_sparse=True,
-        )["lexical_weights"]
-        return [self._to_standard_dict(output) for output in outputs]
-
-    def _to_standard_dict(self, raw_output):
-        result = {}
-        for k in raw_output:
-            result[int(k)] = raw_output[k]
-        return result
-
-
-Settings.text_splitter = SentenceSplitter(chunk_size=512, chunk_overlap=100)
-Settings.embed_model = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device='cpu', embed_batch_size=2)
+Settings.text_splitter = SentenceSplitter(chunk_size=512, chunk_overlap=50)
+Settings.embed_model = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device='cpu', embed_batch_size=4)
 
 
 def generate_doc(filename: str) -> List[Document]:
     # 原始数据
     parser = PandasExcelReader()
     file_extractor = {".xlsx": parser}
-    documents = SimpleDirectoryReader(input_files=[filename],
-                                      file_extractor=file_extractor).load_data()
+    documents = SimpleDirectoryReader(input_files=[filename],file_extractor=file_extractor).load_data()
     print(len(documents))
     print(documents[:1])
     return documents

@@ -217,6 +217,18 @@ tests = ["cloudpickle ; platform_python_implementation == \"CPython\"", "hypothe
 tests-mypy = ["mypy (>=1.11.1) ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\"", "pytest-mypy-plugins ; platform_python_implementation == \"CPython\" and python_version >= \"3.10\""]
 
 [[package]]
+name = "backoff"
+version = "2.2.1"
+description = "Function decoration for backoff and retry"
+optional = false
+python-versions = ">=3.7,<4.0"
+groups = ["main"]
+files = [
+    {file = "backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8"},
+    {file = "backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba"},
+]
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.13.3"
 description = "Screen-scraping library"
@@ -1434,6 +1446,33 @@ files = [
 ]
 
 [[package]]
+name = "langfuse"
+version = "2.59.4"
+description = "A client library for accessing langfuse"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "langfuse-2.59.4-py3-none-any.whl", hash = "sha256:91ab95f57ab6c1e1461b63a6e05b6f2e1fc166011cea03aad2f9825e5e4ec836"},
+    {file = "langfuse-2.59.4.tar.gz", hash = "sha256:1833732bf42c487ba9f28fdb0ec83e458161e6ed7e66f312ce5bd065f49c951c"},
+]
+
+[package.dependencies]
+anyio = ">=4.4.0,<5.0.0"
+backoff = ">=1.10.0"
+httpx = ">=0.15.4,<1.0"
+idna = ">=3.7,<4.0"
+packaging = ">=23.2,<25.0"
+pydantic = ">=1.10.7,<3.0"
+requests = ">=2,<3"
+wrapt = ">=1.14,<2.0"
+
+[package.extras]
+langchain = ["langchain (>=0.0.309)"]
+llama-index = ["llama-index (>=0.10.12,<2.0.0)"]
+openai = ["openai (>=0.27.8)"]
+
+[[package]]
 name = "llama-cloud"
 version = "0.1.13"
 description = ""
@@ -1511,6 +1550,22 @@ files = [
 llama-index-core = ">=0.12.18,<0.13.0"
 llama-index-llms-openai = ">=0.3.0,<0.4.0"
 openai = ">=1.14.0"
+
+[[package]]
+name = "llama-index-callbacks-langfuse"
+version = "0.3.0"
+description = "llama-index callbacks langfuse integration"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "llama_index_callbacks_langfuse-0.3.0-py3-none-any.whl", hash = "sha256:6b29b187f94d5918d330ee5c16660a744f522d4e56e893b9ff786bd5d7e72d2d"},
+    {file = "llama_index_callbacks_langfuse-0.3.0.tar.gz", hash = "sha256:24c9ce0284c10c5d2cdb3ed2be9974aefc582906a8e5d9eb275c77d49e41b3b9"},
+]
+
+[package.dependencies]
+langfuse = ">=2.21.2,<3.0.0"
+llama-index-core = ">=0.12.0,<0.13.0"
 
 [[package]]
 name = "llama-index-cli"
@@ -4787,4 +4842,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "eb741d274db97a9c784a90ca948f21d618f2a2a4be3dc6d98d071a510f4d8dbe"
+content-hash = "210f552bc905a1ebd26cde36aac1e773ae76441cf13aada8262dbb2cec3bcdb4"
