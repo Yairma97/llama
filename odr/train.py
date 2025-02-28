@@ -22,7 +22,7 @@ from typing import List
 from llama_index.vector_stores.milvus.utils import BaseSparseEmbeddingFunction
 import nest_asyncio
 
-from embeddingfunction import ExampleEmbeddingFunction
+from embedding import ExampleEmbeddingFunction
 
 nest_asyncio.apply()
 dotenv.load_dotenv()
@@ -72,5 +72,5 @@ if __name__ == '__main__':
         )
     )
     print('-----------')
-    asyncio.run(pipeline.arun(documents=generate_doc('./data/18 HDR-病案模型目录.xlsx'), show_progress=True))
+    asyncio.run(pipeline.arun(documents=generate_doc('../data/18 HDR-病案模型目录.xlsx'), show_progress=True))
     print('============')
