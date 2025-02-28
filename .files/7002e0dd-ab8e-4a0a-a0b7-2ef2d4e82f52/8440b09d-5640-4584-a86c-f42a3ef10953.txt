@@ -1,0 +1,10 @@
+00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) LAB_DIAG_FEE 诊断类-实验室诊断费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) IMAGE_DIAG_FEE 诊断类-影像学诊断费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) NONOPER_TREAT_FEE 治疗类-非手术治疗项目费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) NONOPER_CLIN_PHYSICAL_FEE 治疗类-非手术治疗项目费-临床物理治疗费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) SURGICAL_TREAT_FEE 治疗类-手术治疗费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) SURGICAL_TREAT_FEE_ANESTHESIA 治疗类-手术治疗费-麻醉费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,2) SURGICAL_TREAT_FEE_OPER 治疗类-手术治疗费-手术费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(10,2) RECOVERY_FEE 康复类-康复费 是   DE07.00.010.00 
+住院病案首页 EMR_CR_INPAT_RFP numeric(14,

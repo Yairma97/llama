@@ -1,0 +1,10 @@
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(32) ORG_CODE 医疗机构代码 是 是   
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(64) ORG_NAME 医疗机构名称 是   DE08.10.013.00 
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(32) DISEASE_CATEGORY_CODE 病种代码 是 是   
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(256) DISEASE_CATEGORY_NAME_CODE 病种名称代码 是    
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(32) DIAG_CODE 疾病诊断编码 是 是  DE05.01.024.00 GB/T 14396-2016
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(256) DIAG_NAME 疾病诊断名称 是   DE05.01.025.00 
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO varchar(10) USE_STATUS 使用状态 是  使用状态  
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Varchar(50) SYSTEM_FLAG 数据来源 是 是 数据的来源系统  
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO Datetime DATA_UPDATE_TIME 数据更新日期时间 是  yyyy-mm-dd  hh:nn:ss  
+病种诊断组对照信息 CRIS_DRGS_DIAG_INFO bigint BATCH_NO 批号 否

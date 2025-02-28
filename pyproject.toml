@@ -26,7 +26,8 @@ dependencies = [
     "llama-index-storage-kvstore-redis (>=0.3.0,<0.4.0)",
     "llama-index-storage-docstore-redis (>=0.3.0,<0.4.0)",
     "llama-index-callbacks-langfuse (>=0.3.0,<0.4.0)",
-    "llama-deploy (>=0.6.1,<0.7.0)"
+    "llama-deploy (>=0.6.1,<0.7.0)",
+    "chainlit (>=2.2.1,<3.0.0)"
 ]
 
 [tool.poetry]
