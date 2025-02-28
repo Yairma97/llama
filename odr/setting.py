@@ -2,10 +2,15 @@ import os
 
 import chainlit
 from langfuse.llama_index import LlamaIndexCallbackHandler
-from llama_index.core import Settings, VectorStoreIndex
+from llama_index.core import Settings, VectorStoreIndex, get_response_synthesizer
 from llama_index.core.callbacks import TokenCountingHandler, LlamaDebugHandler
+from llama_index.core.indices.vector_store import VectorIndexRetriever
 from llama_index.core.node_parser import SentenceSplitter
+from llama_index.core.postprocessor import SimilarityPostprocessor
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.core.vector_stores.types import VectorStoreQueryMode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.llms.openai import OpenAI
 from llama_index.llms.openai_like import OpenAILike
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from transformers import AutoTokenizer
@@ -25,16 +30,16 @@ async def global_settings_init():
         is_chat_model=True,
         streaming=True
     )
-    # langfuse_callback_handler = LlamaIndexCallbackHandler()
-    # token_counter = TokenCountingHandler(tokenizer=Settings.tokenizer)
+    langfuse_callback_handler = LlamaIndexCallbackHandler()
+    token_counter = TokenCountingHandler(tokenizer=Settings.tokenizer)
     llama_debug = LlamaDebugHandler(print_trace_on_end=True)
     chainlit_handler = chainlit.LlamaIndexCallbackHandler()
-    # Settings.callback_manager.add_handler(langfuse_callback_handler)
-    # Settings.callback_manager.add_handler(token_counter)
+    Settings.callback_manager.add_handler(langfuse_callback_handler)
+    Settings.callback_manager.add_handler(token_counter)
     Settings.callback_manager.add_handler(llama_debug)
     Settings.callback_manager.add_handler(chainlit_handler)
     Settings.context_window = 4096
-    Settings.query_engine = (VectorStoreIndex.from_vector_store(vector_store=MilvusVectorStore(
+    vector_store = MilvusVectorStore(
         dim=1024,
         uri="http://localhost:19530",
         # overwrite=True,
@@ -42,8 +47,19 @@ async def global_settings_init():
         sparse_embedding_function=ExampleEmbeddingFunction(),
         hybrid_ranker="RRFRanker",
         hybrid_ranker_params={"k": 60},
-    ), use_async=True).as_query_engine(vector_store_query_mode="hybrid", streaming=True))
-
+    )
+    index = VectorStoreIndex.from_vector_store(vector_store, use_async=True)
+    retriever = VectorIndexRetriever(
+        index=index,
+        similarity_top_k=1,
+        vector_store_query_mode=VectorStoreQueryMode.HYBRID
+    )
+    response_synthesizer = get_response_synthesizer(use_async=True,streaming=True)
+    Settings.query_engine = RetrieverQueryEngine(
+        retriever=retriever,
+        response_synthesizer=response_synthesizer,
+        node_postprocessors=[],
+    )
 
 async def reset_callback_handlers():
     handles = Settings.callback_manager.handlers
