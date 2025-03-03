@@ -8,8 +8,7 @@ from typing import List
 
 class ExampleEmbeddingFunction(BaseSparseEmbeddingFunction):
     def __init__(self):
-        dotenv.load_dotenv()
-        self.model = BGEM3FlagModel(os.getenv("EMBEDDING_MODEL"), use_fp16=False,devices='cpu')
+        self.model = BGEM3FlagModel(os.getenv("EMBEDDING_MODEL"), use_fp16=False, devices=os.getenv("DEVICE"))
 
     def encode_queries(self, queries: List[str]):
         outputs = self.model.encode(

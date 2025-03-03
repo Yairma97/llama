@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import sys
 
 import chainlit
 import dotenv
@@ -10,10 +12,6 @@ from setting import global_settings_init, reset_callback_handlers
 
 nest_asyncio.apply()
 dotenv.load_dotenv()
-
-
-# logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-# logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 @chainlit.set_starters
 async def set_starters():
@@ -77,9 +75,6 @@ async def on_message(msg: chainlit.Message):
     async for token in llm_response.async_response_gen():
         await resp.stream_token(token)
     print("The assistant sent: ", resp.content)
-    await chainlit.Message(
-        author="Assistant", content="Hello! Im an AI assistant. How may I help you?"
-    ).send()
 
 
 async def main():
