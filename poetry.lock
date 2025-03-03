@@ -1998,6 +1998,21 @@ llama-index-core = ">=0.12.3,<0.13.0"
 llama-index-llms-openai = ">=0.3.0,<0.4.0"
 
 [[package]]
+name = "llama-index-postprocessor-flag-embedding-reranker"
+version = "0.3.0"
+description = "llama-index postprocessor flag embedding reranker integration"
+optional = false
+python-versions = "<4.0,>=3.9"
+groups = ["main"]
+files = [
+    {file = "llama_index_postprocessor_flag_embedding_reranker-0.3.0-py3-none-any.whl", hash = "sha256:924a112c501679ca562e145782686ef5f6ba5cc777bbc0c28cf57ac49316a5cf"},
+    {file = "llama_index_postprocessor_flag_embedding_reranker-0.3.0.tar.gz", hash = "sha256:9e042a1f2cd233b193e9cfb1e51a8964ca049682adf866665f07c6163852c8d2"},
+]
+
+[package.dependencies]
+llama-index-core = ">=0.12.0,<0.13.0"
+
+[[package]]
 name = "llama-index-program-openai"
 version = "0.3.1"
 description = "llama-index program openai integration"
@@ -5577,4 +5592,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "2b1e65df70ee310dfb5fe18ea3202dafcc2cb48e31a5a60137a114a08b07d661"
+content-hash = "15f0d6c9b176458c5d4a52d21109954eac52097ecde99f9cde96937ef77754f4"

@@ -44,9 +44,6 @@ async def set_starters():
 async def on_chat_start():
     chainlit.user_session.set("query_engine", Settings.query_engine)
     print("The user connected!")
-    # await chainlit.Message(
-    #     author="Assistant", content="Hello! Im an AI assistant. How may I help you?"
-    # ).send()
 
 
 @chainlit.on_stop
