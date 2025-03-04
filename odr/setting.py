@@ -1,15 +1,16 @@
 import os
-import chainlit
-from langfuse.llama_index import LlamaIndexCallbackHandler
+
+from chainlit import LlamaIndexCallbackHandler as ChainlitCallbackHandler
+from langfuse.llama_index import LlamaIndexCallbackHandler as LangfuseCallbackHandler
 from llama_index.core import Settings, VectorStoreIndex, get_response_synthesizer
 from llama_index.core.callbacks import TokenCountingHandler, LlamaDebugHandler
-from llama_index.core.indices.query.query_transform import StepDecomposeQueryTransform, HyDEQueryTransform
+from llama_index.core.indices.query.query_transform import HyDEQueryTransform
 from llama_index.core.indices.vector_store import VectorIndexRetriever
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.core.query_engine import RetrieverQueryEngine, MultiStepQueryEngine, TransformQueryEngine
+from llama_index.core.query_engine import RetrieverQueryEngine, TransformQueryEngine
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.openai_like import OpenAILike
+from llama_index.llms.openai import OpenAI
 from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from transformers import AutoTokenizer
@@ -25,7 +26,7 @@ async def global_settings_init():
     Settings.tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=os.getenv("EMBEDDING_MODEL"))
     Settings.embed_model = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device='cpu',
                                                 embed_batch_size=2)
-    Settings.llm = OpenAILike(
+    Settings.llm = OpenAI(
         model="gpt-4o-mini",
         api_base=os.getenv("OPENAI_API_BASE"),
         api_key=os.getenv("OPENAI_API_KEY"),
@@ -37,10 +38,10 @@ async def global_settings_init():
     #                         api_key=os.getenv("DEEPSEEK_API_KEY"),
     #                         is_chat_model=True,
     #                         streaming=True)
-    langfuse_callback_handler = LlamaIndexCallbackHandler()
+    langfuse_callback_handler = LangfuseCallbackHandler()
     token_counter = TokenCountingHandler(tokenizer=Settings.tokenizer)
     llama_debug = LlamaDebugHandler(print_trace_on_end=True)
-    chainlit_handler = chainlit.LlamaIndexCallbackHandler()
+    chainlit_handler = ChainlitCallbackHandler()
     Settings.callback_manager.add_handler(langfuse_callback_handler)
     Settings.callback_manager.add_handler(token_counter)
     Settings.callback_manager.add_handler(llama_debug)
@@ -88,11 +89,9 @@ async def global_settings_init():
 async def reset_callback_handlers():
     handles = Settings.callback_manager.handlers
     for handle in handles:
-        if isinstance(handle, LlamaIndexCallbackHandler):
+        if isinstance(handle, LangfuseCallbackHandler):
             handle.flush()
         if isinstance(handle, TokenCountingHandler):
             handle.reset_counts()
         if isinstance(handle, LlamaDebugHandler):
             handle.flush_event_logs()
-        if isinstance(handle, chainlit.LlamaIndexCallbackHandler):
-            handle.reset_counts()
