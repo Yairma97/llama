@@ -38,7 +38,7 @@ def generate_doc(path: str) -> List[Document]:
     # 原始数据
     parser = PandasExcelReader()
     file_extractor = {".xlsx": parser}
-    documents = SimpleDirectoryReader(input_dir=path,file_extractor=file_extractor).load_data()
+    documents = SimpleDirectoryReader(input_files=["data/18 HDR-病案模型目录.xlsx"],file_extractor=file_extractor).load_data()
     print(len(documents))
     print(documents[:1])
     return documents
