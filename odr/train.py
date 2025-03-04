@@ -31,14 +31,14 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 Settings.text_splitter = SentenceSplitter(chunk_size=512, chunk_overlap=50)
-Settings.embed_model = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device='cpu', embed_batch_size=4)
+Settings.embed_model = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device=os.getenv('DEVICE'), embed_batch_size=4)
 
 
-def generate_doc(filename: str) -> List[Document]:
+def generate_doc(path: str) -> List[Document]:
     # 原始数据
     parser = PandasExcelReader()
     file_extractor = {".xlsx": parser}
-    documents = SimpleDirectoryReader(input_files=[filename],file_extractor=file_extractor).load_data()
+    documents = SimpleDirectoryReader(input_dir=path,file_extractor=file_extractor).load_data()
     print(len(documents))
     print(documents[:1])
     return documents
@@ -53,6 +53,7 @@ if __name__ == '__main__':
         ],
         # 向量数据库
         vector_store=MilvusVectorStore(
+            collection_name='odr',
             dim=1024,
             uri="http://localhost:19530",
             # overwrite=True,
@@ -72,5 +73,5 @@ if __name__ == '__main__':
         )
     )
     print('-----------')
-    asyncio.run(pipeline.arun(documents=generate_doc('../data/18 HDR-病案模型目录.xlsx'), show_progress=True))
+    asyncio.run(pipeline.arun(documents=generate_doc('data'), show_progress=True))
     print('============')
