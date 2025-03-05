@@ -33,7 +33,8 @@ def export_milvus_data(host='localhost', port='19530', export_dir='./milvus_data
             # 分页参数配置
             query_params = {
                 "expr": "",
-                "output_fields": ["*"],  # 使用过滤后的字段列表
+                # "output_fields": valid_fields,  # 使用过滤后的字段列表
+                "output_fields": ["*"],
                 "limit": 10000,
                 "offset": 0
             }

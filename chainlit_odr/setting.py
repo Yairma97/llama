@@ -21,7 +21,7 @@ from embedding import ExampleEmbeddingFunction
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 # logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
-async def global_settings_init():
+async def custom_settings_init():
     Settings.text_splitter = SentenceSplitter(chunk_size=512, chunk_overlap=100)
     Settings.tokenizer = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=os.getenv("EMBEDDING_MODEL"))
     Settings.embed_model = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device='cpu',

@@ -53,7 +53,7 @@ if __name__ == '__main__':
         ],
         # 向量数据库
         vector_store=MilvusVectorStore(
-            collection_name='odr',
+            collection_name='chainlit_odr',
             dim=1024,
             uri="http://localhost:19530",
             # overwrite=True,
