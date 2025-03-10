@@ -15,7 +15,7 @@ from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReran
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from transformers import AutoTokenizer
 
-from embedding import ExampleEmbeddingFunction
+
 
 
 # logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
@@ -47,7 +47,7 @@ async def custom_settings_init():
     Settings.callback_manager.add_handler(llama_debug)
     Settings.callback_manager.add_handler(chainlit_handler)
     Settings.context_window = 4096
-
+    from embedding import ExampleEmbeddingFunction
     vector_store = MilvusVectorStore(
         dim=1024,
         uri="http://localhost:19530",

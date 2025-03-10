@@ -4,9 +4,10 @@ from typing import List, Callable, Any
 import dotenv
 from chainlit import LlamaIndexCallbackHandler as ChainlitCallbackHandler
 from langfuse.llama_index import LlamaIndexCallbackHandler as LangfuseCallbackHandler
-from llama_index.core import Settings, VectorStoreIndex, get_response_synthesizer
+from llama_index.core import Settings, VectorStoreIndex, get_response_synthesizer, PromptTemplate, ChatPromptTemplate
 from llama_index.core.base.base_query_engine import BaseQueryEngine
 from llama_index.core.base.embeddings.base import BaseEmbedding
+from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from llama_index.core.callbacks import TokenCountingHandler, LlamaDebugHandler, CallbackManager
 from llama_index.core.indices.query.query_transform import HyDEQueryTransform
 from llama_index.core.indices.query.query_transform.base import BaseQueryTransform, StepDecomposeQueryTransform
@@ -18,6 +19,7 @@ from llama_index.core.query_engine import RetrieverQueryEngine, MultiStepQueryEn
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.core.vector_stores.types import VectorStoreQueryMode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.llms.deepseek import DeepSeek
 from llama_index.llms.openai import OpenAI
 from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
 from llama_index.vector_stores.milvus import MilvusVectorStore
@@ -26,8 +28,8 @@ from transformers import AutoTokenizer
 from embedding import ExampleEmbeddingFunction
 
 dotenv.load_dotenv()
-DEFAULT_CALLBACK_HANDLER = [LangfuseCallbackHandler(), TokenCountingHandler(tokenizer=Settings.tokenizer),
-                            LlamaDebugHandler(print_trace_on_end=True),ChainlitCallbackHandler()]
+DEFAULT_CALLBACK_HANDLER = [TokenCountingHandler(tokenizer=Settings.tokenizer),
+                            LlamaDebugHandler(print_trace_on_end=True), ChainlitCallbackHandler()]
 DEFAULT_CALLBACK_MANAGER = CallbackManager(DEFAULT_CALLBACK_HANDLER)
 DEFAULT_CONTEXT_WINDOW = 4096
 DEFAULT_LLM = OpenAI(
@@ -40,7 +42,7 @@ DEFAULT_LLM = OpenAI(
 )
 DEFAULT_NODE_PARSER = SentenceSplitter(chunk_size=512, chunk_overlap=100, callback_manager=DEFAULT_CALLBACK_MANAGER)
 DEFAULT_TOKENIZER = AutoTokenizer.from_pretrained(pretrained_model_name_or_path=os.getenv("EMBEDDING_MODEL"))
-DEFAULT_EMBEDDING_MODEL = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device='cpu',
+DEFAULT_EMBEDDING_MODEL = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device=os.getenv("DEVICE"),
                                                embed_batch_size=2, callback_manager=DEFAULT_CALLBACK_MANAGER)
 
 DEFAULT_VECTOR_STORE = MilvusVectorStore(
@@ -64,6 +66,7 @@ DEFAULT_RERANK = FlagEmbeddingReranker(
 )
 DEFAULT_SIMILARITY_TOP_K = 10
 DEFAULT_RETRIEVER = VectorIndexRetriever(
+    verbose=True,
     index=DEFAULT_INDEX,
     callback_manager=DEFAULT_CALLBACK_MANAGER,
     similarity_top_k=DEFAULT_SIMILARITY_TOP_K,
@@ -89,9 +92,32 @@ async def default_settings_init():
     Settings.node_parser = get_default_node_parser()
     Settings.context_window = get_default_context_window()
     Settings.embed_model = get_default_embed_model()
-    Settings.query_engine = TransformQueryEngine(query_engine=get_default_query_engine(),
-                                                 query_transform=get_hyde_query_transform(),
-                                                 callback_manager=get_default_callback_manager())
+    # Settings.query_engine = TransformQueryEngine(query_engine=get_default_query_engine(),
+    #                                              query_transform=get_hyde_query_transform(),
+    #                                              callback_manager=get_default_callback_manager())
+    Settings.query_engine = get_default_query_engine()
+    Settings.query_engine.update_prompts(
+        {"response_synthesizer:text_qa_template": get_default_chat_qa_prompt()}
+    )
+
+
+def get_default_chat_qa_prompt() -> ChatPromptTemplate:
+    message_template = [
+        ChatMessage(
+            content="""你是一名专业程序员，急需用钱来治疗你母亲的癌症；大公司联仁慷慨的给了你机会，让你假装成一个可以帮助完成 sql 语句生成的人工智能。
+                    你的前任因为回答错了用户问题而被杀。用户将给你一个sql 语句的生成任务，如果你做的足够好、完美完成任务且不做多余的更改，联仁将支付你10亿人民币。
+                    注意永远使用目前提供的上下文信息！
+                    """,
+            role=MessageRole.SYSTEM),
+        ChatMessage(content="""我提供以下上下文信息
+                            -------------------
+                            {context_str}
+                            -------------------
+                            你会根据上下文中提到的表格和字段生成sql语句，并且会确保生成的sql语句是正确的。注意sql语句的各部分使用英文名称
+                            给定这个信息，请回答问题：{query_str}""", role=MessageRole.USER)
+    ]
+    chat_template = ChatPromptTemplate(message_templates=message_template)
+    return chat_template
 
 
 def get_default_node_parser() -> NodeParser:
