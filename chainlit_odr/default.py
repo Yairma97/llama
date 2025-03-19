@@ -27,7 +27,12 @@ from transformers import AutoTokenizer
 
 from embedding import ExampleEmbeddingFunction
 
-dotenv.load_dotenv()
+# 获取当前环境
+environment = os.getenv('ENVIRONMENT', 'dev')
+
+# 加载对应环境的 .env.dev 文件
+env_file = f'.env.{environment}'
+dotenv.load_dotenv(env_file)
 DEFAULT_CALLBACK_HANDLER = [TokenCountingHandler(tokenizer=Settings.tokenizer),
                             LlamaDebugHandler(print_trace_on_end=True), ChainlitCallbackHandler()]
 DEFAULT_CALLBACK_MANAGER = CallbackManager(DEFAULT_CALLBACK_HANDLER)
@@ -48,7 +53,7 @@ DEFAULT_EMBEDDING_MODEL = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_M
 DEFAULT_VECTOR_STORE = MilvusVectorStore(
     collection_name='odr',
     dim=1024,
-    uri="http://localhost:19530",
+    uri=os.getenv("MILVUS_URL"),
     enable_sparse=True,
     sparse_embedding_function=ExampleEmbeddingFunction(),
     hybrid_ranker="RRFRanker",

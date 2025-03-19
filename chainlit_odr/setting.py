@@ -50,7 +50,7 @@ async def custom_settings_init():
     from embedding import ExampleEmbeddingFunction
     vector_store = MilvusVectorStore(
         dim=1024,
-        uri="http://localhost:19530",
+        uri=os.getenv("MILVUS_URL"),
         # overwrite=True,
         enable_sparse=True,
         sparse_embedding_function=ExampleEmbeddingFunction(),
