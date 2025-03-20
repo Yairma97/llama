@@ -1,12 +1,9 @@
 [project]
 name = "llama"
 version = "0.1.0"
-description = ""
-authors = [
-    { name = "mayifan", email = "mayifan@lrhealth.com" }
-]
+description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.10"
 dependencies = [
     "openai (>=1.63.0,<2.0.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
@@ -37,15 +34,11 @@ dependencies = [
     "opentelemetry-sdk (>=1.31.0,<2.0.0)",
 ]
 
-[tool.poetry.dev-dependencies]
-sqlacodegen = ">=3.0.0,<4.0.0"
+[dependency-groups]
+dev = [
+    "sqlacodegen >=3.0.0,<4.0.0"
+]
 
-[tool.poetry]
-package-mode = false
-
-[tool.poetry.requires-plugins]
-poetry-plugin-export = ">=1.8"
-
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+[[tool.uv.index]]
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+default = true

@@ -1,6 +1,7 @@
 ### Python template
 .venv/
 .idea/
+.chainlit/
 .files/
 .poetry/
 # Byte-compiled / optimized / DLL files
