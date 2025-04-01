@@ -1,49 +1,56 @@
 import os
-from typing import List, Callable, Any
+from typing import Callable, List, Any
 
 import dotenv
-from chainlit import LlamaIndexCallbackHandler as ChainlitCallbackHandler
-from llama_index.core import Settings, VectorStoreIndex, get_response_synthesizer, ChatPromptTemplate, \
-    BaseCallbackHandler
+from llama_index.core import Settings, get_response_synthesizer, BaseCallbackHandler, ChatPromptTemplate, \
+    VectorStoreIndex
 from llama_index.core.base.base_query_engine import BaseQueryEngine
 from llama_index.core.base.embeddings.base import BaseEmbedding
-from llama_index.core.base.llms.types import ChatMessage, MessageRole
-from llama_index.core.callbacks import TokenCountingHandler, LlamaDebugHandler, CallbackManager
-from llama_index.core.indices.query.query_transform import HyDEQueryTransform
-from llama_index.core.indices.query.query_transform.base import BaseQueryTransform, StepDecomposeQueryTransform
+from llama_index.core.base.llms.types import MessageRole, ChatMessage
+from llama_index.core.callbacks import CallbackManager, TokenCountingHandler, LlamaDebugHandler
+from llama_index.core.indices.query.query_transform import StepDecomposeQueryTransform
+from llama_index.core.indices.query.query_transform.base import BaseQueryTransform
 from llama_index.core.indices.vector_store import VectorIndexRetriever
 from llama_index.core.llms import LLM
-from llama_index.core.node_parser import SentenceSplitter, NodeParser
-from llama_index.core.query_engine import RetrieverQueryEngine, MultiStepQueryEngine, SubQuestionQueryEngine
+from llama_index.core.node_parser import NodeParser, SentenceSplitter
+from llama_index.core.query_engine import SubQuestionQueryEngine, MultiStepQueryEngine, RetrieverQueryEngine
 from llama_index.core.response_synthesizers import BaseSynthesizer
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
-from llama_index.core.vector_stores.types import VectorStoreQueryMode, BasePydanticVectorStore
+from llama_index.core.vector_stores.types import BasePydanticVectorStore, VectorStoreQueryMode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.llms.deepseek import DeepSeek
+from llama_index.llms.openai import OpenAI
 from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
 from llama_index.vector_stores.milvus import MilvusVectorStore
 from transformers import AutoTokenizer
 
-from embedding import ExampleEmbeddingFunction
+from common.embedding import ExampleEmbeddingFunction
 
 # 获取当前环境
 environment = os.getenv('ENVIRONMENT', 'dev')
 
 # 加载对应环境的 .env.dev 文件
+print("common.default.py")
 env_file = f'.env.{environment}'
+
 dotenv.load_dotenv(env_file)
+print("env_file", env_file)
+print("EMBEDDING_MODEL", os.getenv("EMBEDDING_MODEL"))
+print("DEEPSEEK_API_BASE", os.getenv("DEEPSEEK_API_BASE"))
 
-
-# logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-# logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 def get_default_llm() -> LLM:
-    # return DEFAULT_LLM
-    return DeepSeek(model="DeepSeek-R1",
-                    api_base=os.getenv("DEEPSEEK_API_BASE"),
-                    api_key=os.getenv("DEEPSEEK_API_KEY"),
-                    is_chat_model=True,
-                    streaming=True)
+    return OpenAI(
+        model="gpt-4o-mini",
+        api_base=os.getenv("OPENAI_API_BASE"),
+        api_key=os.getenv("OPENAI_API_KEY"),
+        is_chat_model=True,
+        streaming=True
+    )
+    # return DeepSeek(model="DeepSeek-R1",
+    #                 api_base=os.getenv("DEEPSEEK_API_BASE"),
+    #                 api_key=os.getenv("DEEPSEEK_API_KEY"),
+    #                 is_chat_model=True,
+    #                 streaming=True)
 
 
 async def default_settings_init():
@@ -82,12 +89,12 @@ def get_default_chat_qa_prompt() -> ChatPromptTemplate:
 
 
 def get_default_node_parser() -> NodeParser:
-    return SentenceSplitter(chunk_size=512, chunk_overlap=100, callback_manager=DEFAULT_CALLBACK_MANAGER)
+    return SentenceSplitter(chunk_size=512, chunk_overlap=100, callback_manager=get_default_callback_manager())
 
 
 def get_default_callback_handler() -> List[BaseCallbackHandler]:
-    return [TokenCountingHandler(tokenizer=Settings.tokenizer),
-            LlamaDebugHandler(print_trace_on_end=True), ChainlitCallbackHandler()]
+    return [TokenCountingHandler(tokenizer=get_default_tokenizer()),
+            LlamaDebugHandler(print_trace_on_end=True)]
 
 
 def get_default_tokenizer() -> Callable[[str], List[Any]]:
@@ -101,15 +108,10 @@ def get_default_callback_manager() -> CallbackManager:
 def get_default_context_window() -> int:
     return 4096
 
+
 def get_default_embed_model() -> BaseEmbedding:
-    return DEFAULT_EMBEDDING_MODEL
-
-def get_default_query_engine() -> BaseQueryEngine:
-    return DEFAULT_QUERY_ENGINE
-
-
-def get_hyde_query_transform() -> BaseQueryTransform:
-    return DEFAULT_QUERY_TRANSFORM
+    return HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device=os.getenv("DEVICE"),
+                                embed_batch_size=2, callback_manager=get_default_callback_manager())
 
 
 def get_default_vector_store() -> BasePydanticVectorStore:
@@ -125,17 +127,42 @@ def get_default_vector_store() -> BasePydanticVectorStore:
 
 
 def get_default_chat_response_synthesizer() -> BaseSynthesizer:
-    return get_response_synthesizer(llm=DEFAULT_LLM, use_async=True, streaming=True,
+    return get_response_synthesizer(llm=get_default_llm(), use_async=True, streaming=True,
                                     callback_manager=get_default_callback_manager())
 
 
 def get_multi_step_query_engine(query_engine: BaseQueryEngine) -> BaseQueryEngine:
-    step_decompose_transform = StepDecomposeQueryTransform(llm=Settings.llm, verbose=True)
+    step_decompose_transform = StepDecomposeQueryTransform(llm=get_default_llm(), verbose=True)
     return MultiStepQueryEngine(
         num_steps=2,
         query_engine=query_engine,
         response_synthesizer=get_default_chat_response_synthesizer(),
         query_transform=step_decompose_transform,
+    )
+
+
+def get_default_query_engine() -> BaseQueryEngine:
+    index = VectorStoreIndex.from_vector_store(get_default_vector_store(), embed_model=get_default_embed_model(),
+                                               callback_manager=get_default_callback_manager(), use_async=True,
+                                               show_progress=True)
+    retriever = VectorIndexRetriever(
+        verbose=True,
+        index=index,
+        callback_manager=get_default_callback_manager(),
+        similarity_top_k=10,
+        vector_store_query_mode=VectorStoreQueryMode.HYBRID,
+    )
+    rerank = FlagEmbeddingReranker(
+        top_n=4,
+        model=os.getenv("RERANK_MODEL"),
+        use_fp16=False
+    )
+    return RetrieverQueryEngine.from_args(
+        llm=get_default_llm(),
+        retriever=retriever,
+        response_synthesizer=get_default_chat_response_synthesizer(),
+        node_postprocessors=[rerank],
+        callback_manager=get_default_callback_manager(),
     )
 
 
@@ -153,39 +180,3 @@ def get_subquestion_query_engine(query_engine: BaseQueryEngine) -> BaseQueryEngi
         query_engine_tools=query_engine_tools,
         use_async=True,
     )
-
-
-DEFAULT_CALLBACK_HANDLER = get_default_callback_handler()
-DEFAULT_CALLBACK_MANAGER = get_default_callback_manager()
-DEFAULT_CONTEXT_WINDOW = get_default_context_window()
-DEFAULT_LLM = get_default_llm()
-DEFAULT_NODE_PARSER = get_default_node_parser()
-DEFAULT_TOKENIZER = get_default_tokenizer()
-DEFAULT_EMBEDDING_MODEL = HuggingFaceEmbedding(model_name=os.getenv("EMBEDDING_MODEL"), device=os.getenv("DEVICE"),
-                                               embed_batch_size=2, callback_manager=DEFAULT_CALLBACK_MANAGER)
-DEFAULT_VECTOR_STORE = get_default_vector_store()
-DEFAULT_RESPONSE_SYNTHESIZER = get_default_chat_response_synthesizer()
-DEFAULT_INDEX = VectorStoreIndex.from_vector_store(DEFAULT_VECTOR_STORE, embed_model=DEFAULT_EMBEDDING_MODEL,
-                                                   callback_manager=DEFAULT_CALLBACK_MANAGER, use_async=True,
-                                                   show_progress=True)
-DEFAULT_RERANK = FlagEmbeddingReranker(
-    top_n=4,
-    model=os.getenv("RERANK_MODEL"),
-    use_fp16=False
-)
-DEFAULT_SIMILARITY_TOP_K = 10
-DEFAULT_RETRIEVER = VectorIndexRetriever(
-    verbose=True,
-    index=DEFAULT_INDEX,
-    callback_manager=DEFAULT_CALLBACK_MANAGER,
-    similarity_top_k=DEFAULT_SIMILARITY_TOP_K,
-    vector_store_query_mode=VectorStoreQueryMode.HYBRID,
-)
-DEFAULT_QUERY_TRANSFORM = HyDEQueryTransform(include_original=True, llm=DEFAULT_LLM)
-DEFAULT_QUERY_ENGINE = RetrieverQueryEngine.from_args(
-    llm=DEFAULT_LLM,
-    retriever=DEFAULT_RETRIEVER,
-    response_synthesizer=DEFAULT_RESPONSE_SYNTHESIZER,
-    node_postprocessors=[DEFAULT_RERANK],
-    callback_manager=DEFAULT_CALLBACK_MANAGER,
-)

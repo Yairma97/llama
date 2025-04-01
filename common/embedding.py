@@ -1,6 +1,5 @@
 import os
 
-import dotenv
 from llama_index.vector_stores.milvus.utils import BaseSparseEmbeddingFunction
 from FlagEmbedding import BGEM3FlagModel
 from typing import List

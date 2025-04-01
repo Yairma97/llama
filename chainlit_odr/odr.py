@@ -1,20 +1,14 @@
 import asyncio
-import logging
 import os
-import sys
-
 import chainlit
-import dotenv
 import nest_asyncio
-from chainlit.cli import run_chainlit
 from llama_index.core import Settings
-
-from default import default_settings_init
-from setting import reset_callback_handlers
-
+import sys
+project_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_root)
+sys.path.append(os.path.dirname(project_root))
 nest_asyncio.apply()
-dotenv.load_dotenv()
-current_dir = os.path.dirname(os.path.abspath(__file__))
+from setting import reset_callback_handlers, custom_settings_init
 
 
 @chainlit.set_starters
@@ -80,7 +74,7 @@ async def on_message(msg: chainlit.Message):
 
 async def main():
     print("Initializing global")
-    await default_settings_init()
+    await custom_settings_init()
     print("global Settings initialized!")
 
 
