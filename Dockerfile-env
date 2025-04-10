@@ -6,8 +6,10 @@ RUN apt-get update && apt-get install -y gcc zlib1g-dev && apt-get clean
 RUN mkdir -p /root/.pip && \
     echo "[global]" > /root/.pip/pip.conf && \
     echo "index-url = https://pypi.tuna.tsinghua.edu.cn/simple" >> /root/.pip/pip.conf
-RUN pip install torch==2.2.2+cpu --index-url https://download.pytorch.org/whl/cpu
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install uv
+RUN uv venv .venv
+RUN uv pip install torch==2.2.2+cpu --index-url https://download.pytorch.org/whl/cpu
+RUN uv pip install --no-cache-dir -r requirements.txt
 
 
 

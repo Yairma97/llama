@@ -1,6 +1,7 @@
 import os
 
 import dotenv
+from chainlit import LlamaIndexCallbackHandler
 from langfuse.llama_index import LlamaIndexCallbackHandler as LangfuseCallbackHandler
 from llama_index.core import Settings, VectorStoreIndex, get_response_synthesizer, ChatPromptTemplate
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
@@ -35,7 +36,8 @@ print("DEEPSEEK_API_BASE", os.getenv("DEEPSEEK_API_BASE"))
 
 async def custom_settings_init():
     callback_manager = CallbackManager([TokenCountingHandler(tokenizer=Settings.tokenizer),
-                                        LlamaDebugHandler(print_trace_on_end=True)])
+                                        LlamaDebugHandler(print_trace_on_end=True),
+                                        LlamaIndexCallbackHandler()])
     # langfuse_callback_handler = LangfuseCallbackHandler()
     # callback_manager.add_handler(langfuse_callback_handler)
     Settings.callback_manager = callback_manager
