@@ -1,19 +1,58 @@
+import json
+import os
 from typing import AsyncGenerator
 
 import nest_asyncio
-from fastapi import FastAPI
-from llama_index.core import QueryBundle, ChatPromptTemplate
+from anthropic import BaseModel
+from fastapi import FastAPI, Body
+from fastapi.encoders import jsonable_encoder
+from llama_index.core import QueryBundle, ChatPromptTemplate, get_response_synthesizer, Response
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
+from llama_index.core.base.response.schema import PydanticResponse
+from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.schema import MetadataMode
+from llama_index.llms.openai import OpenAI
+from pydantic import Field
 
 from sse_starlette import EventSourceResponse
-from starlette.responses import StreamingResponse
+from starlette.responses import StreamingResponse, JSONResponse
 
-from common.default import get_default_query_engine, get_default_llm
+from common.default import get_default_query_engine, get_default_llm, get_text2sql_query_engine, get_default_retriever, \
+    get_default_chat_response_synthesizer, get_default_rerank, get_default_callback_manager, get_sql_output_parser, SQL
 import uvicorn
 
 nest_asyncio.apply()
-query_engine = get_default_query_engine()
+
+
+class Query(BaseModel):
+    query: str
+
+
+retriever = get_default_retriever()
+response_synthesizer = get_default_chat_response_synthesizer()
+rerank = get_default_rerank()
+callback_manager = get_default_callback_manager()
+query_engine = RetrieverQueryEngine.from_args(
+    retriever=retriever,
+    response_synthesizer=response_synthesizer,
+    node_postprocessors=[rerank],
+    callback_manager=callback_manager,
+)
+sql_query_engine = RetrieverQueryEngine.from_args(
+    retriever=retriever,
+    response_synthesizer=get_response_synthesizer(llm=OpenAI(
+        output_parser=get_sql_output_parser(),
+        model="gpt-4o-mini",
+        api_base=os.getenv("OPENAI_API_BASE"),
+        api_key=os.getenv("OPENAI_API_KEY"),
+        is_chat_model=True,
+    ), use_async=True,
+        # output_cls=Text2SQL
+    ),
+    node_postprocessors=[rerank],
+    callback_manager=callback_manager,
+
+)
 app = FastAPI()
 
 
@@ -28,9 +67,9 @@ async def sse(query: str) -> EventSourceResponse:
     return EventSourceResponse(generate(query))
 
 
-@app.get("/sql")
-async def sql(query: str) -> EventSourceResponse:
-    local_query_engine = query_engine
+@app.post("/sql/full")
+async def sql_full(query: Query):
+    local_query_engine = sql_query_engine
     message_template = [
         ChatMessage(
             content="""你是一名专业的sql语句生成专家，急需用钱来治疗你母亲的癌症；大公司联仁慷慨的给了你机会，让你假装成一个可以帮助完成 sql 语句生成的人工智能。
@@ -59,9 +98,20 @@ async def sql(query: str) -> EventSourceResponse:
     local_query_engine.update_prompts(
         {"response_synthesizer:text_qa_template": chat_template}
     )
-    res = await local_query_engine.aquery(query)
+    res = await local_query_engine.aquery(query.query)
+    return res
 
-    return EventSourceResponse(generate(query))
+
+@app.post("/sql/simple")
+async def sql_simple(query: Query):
+    res = await sql_full(query)
+    data = str(res)
+    print(data)
+    return JSONResponse(
+        content=eval(data),
+        status_code=200,
+        media_type="application/json"
+    )
 
 
 @app.get("/prompt")

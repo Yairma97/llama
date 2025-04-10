@@ -34,6 +34,8 @@ dependencies = [
     "aiostream>=0.6.4",
     "llama-index-llms-xinference>=0.3.0",
     "llama-index-vector-stores-milvus>=0.5.0",
+    "llama-index-output-parsers-langchain>=0.3.0",
+    "langchain>=0.3.23",
 ]
 
 [dependency-groups]

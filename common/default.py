@@ -2,9 +2,11 @@ import os
 from typing import Callable, List, Any
 
 import dotenv
+from langchain_core.output_parsers import BaseOutputParser, JsonOutputParser
 from llama_index.core import Settings, get_response_synthesizer, BaseCallbackHandler, ChatPromptTemplate, \
     VectorStoreIndex
 from llama_index.core.base.base_query_engine import BaseQueryEngine
+from llama_index.core.base.base_retriever import BaseRetriever
 from llama_index.core.base.embeddings.base import BaseEmbedding
 from llama_index.core.base.llms.types import MessageRole, ChatMessage
 from llama_index.core.callbacks import CallbackManager, TokenCountingHandler, LlamaDebugHandler
@@ -13,15 +15,19 @@ from llama_index.core.indices.query.query_transform.base import BaseQueryTransfo
 from llama_index.core.indices.vector_store import VectorIndexRetriever
 from llama_index.core.llms import LLM
 from llama_index.core.node_parser import NodeParser, SentenceSplitter
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.query_engine import SubQuestionQueryEngine, MultiStepQueryEngine, RetrieverQueryEngine
 from llama_index.core.response_synthesizers import BaseSynthesizer
 from llama_index.core.tools import QueryEngineTool, ToolMetadata
 from llama_index.core.vector_stores.types import BasePydanticVectorStore, VectorStoreQueryMode
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.output_parsers.langchain import LangchainOutputParser
 from llama_index.postprocessor.flag_embedding_reranker import FlagEmbeddingReranker
 from llama_index.vector_stores.milvus import MilvusVectorStore
+from pydantic import BaseModel, Field
 from transformers import AutoTokenizer
+from langchain.output_parsers import StructuredOutputParser, ResponseSchema
 
 from common.embedding import ExampleEmbeddingFunction
 
@@ -37,6 +43,9 @@ print("env_file", env_file)
 print("EMBEDDING_MODEL", os.getenv("EMBEDDING_MODEL"))
 print("DEEPSEEK_API_BASE", os.getenv("DEEPSEEK_API_BASE"))
 
+
+class SQL(BaseModel):
+    sql: str = Field(description="根据用户提问生成的sql 语句")
 
 def get_default_llm() -> LLM:
     return OpenAI(
@@ -141,27 +150,57 @@ def get_multi_step_query_engine(query_engine: BaseQueryEngine) -> BaseQueryEngin
     )
 
 
-def get_default_query_engine() -> BaseQueryEngine:
-    index = VectorStoreIndex.from_vector_store(get_default_vector_store(), embed_model=get_default_embed_model(),
-                                               callback_manager=get_default_callback_manager(), use_async=True,
-                                               show_progress=True)
-    retriever = VectorIndexRetriever(
+def get_default_index() -> VectorStoreIndex:
+    return VectorStoreIndex.from_vector_store(get_default_vector_store(), embed_model=get_default_embed_model(),
+                                              callback_manager=get_default_callback_manager(), use_async=True,
+                                              show_progress=True)
+
+
+def get_default_retriever() -> BaseRetriever:
+    return VectorIndexRetriever(
         verbose=True,
-        index=index,
+        index=get_default_index(),
         callback_manager=get_default_callback_manager(),
         similarity_top_k=10,
         vector_store_query_mode=VectorStoreQueryMode.HYBRID,
     )
-    rerank = FlagEmbeddingReranker(
+
+
+def get_default_rerank() -> BaseNodePostprocessor:
+    return FlagEmbeddingReranker(
         top_n=4,
         model=os.getenv("RERANK_MODEL"),
         use_fp16=False
     )
+
+def get_sql_output_parser() -> LangchainOutputParser:
+    lc_output_parser = JsonOutputParser(pydantic_object=SQL)
+    return LangchainOutputParser(lc_output_parser)
+
+def get_default_query_engine() -> BaseQueryEngine:
     return RetrieverQueryEngine.from_args(
-        llm=get_default_llm(),
-        retriever=retriever,
+        retriever=get_default_retriever(),
         response_synthesizer=get_default_chat_response_synthesizer(),
-        node_postprocessors=[rerank],
+        node_postprocessors=[get_default_rerank()],
+        callback_manager=get_default_callback_manager(),
+    )
+
+
+def get_text2sql_query_engine() -> BaseQueryEngine:
+    llm = OpenAI(
+        output_parser=get_sql_output_parser(),
+        model="gpt-4o-mini",
+        api_base=os.getenv("OPENAI_API_BASE"),
+        api_key=os.getenv("OPENAI_API_KEY"),
+        is_chat_model=True,
+        streaming=True
+    )
+    response_synthesizer = get_response_synthesizer(llm=llm, use_async=True, streaming=True,
+                                                    callback_manager=get_default_callback_manager())
+    return RetrieverQueryEngine.from_args(
+        retriever=get_default_retriever(),
+        response_synthesizer=response_synthesizer,
+        node_postprocessors=[get_default_rerank()],
         callback_manager=get_default_callback_manager(),
     )
 
