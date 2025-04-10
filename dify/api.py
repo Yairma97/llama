@@ -78,7 +78,6 @@ async def sql_full(query: Query):
                         ##核心规则：
                             1.只输出一个无任何注释的完整SQL语句;
                             2.仅使用用户提到的表和字段，可能涉及多个表的多个字段；
-                            3.所有表都在lr_cdr_bi_new_dev这个schema下，所以所有表名前都要有lr_cdr_bi_new_dev作为前缀，以保证完整的路径；
                             ##案例
                             正确示例：
                             select count(*) from lr_cdr_bi_new_dev.cus_dss;
