@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from typing import AsyncGenerator
 
 import nest_asyncio
@@ -11,6 +12,7 @@ from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from llama_index.core.base.response.schema import PydanticResponse
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.schema import MetadataMode
+from llama_index.llms.deepseek import DeepSeek
 from llama_index.llms.openai import OpenAI
 from pydantic import Field
 
@@ -38,17 +40,25 @@ query_engine = RetrieverQueryEngine.from_args(
     node_postprocessors=[rerank],
     callback_manager=callback_manager,
 )
+
+# llm = OpenAI(
+#     output_parser=get_sql_output_parser(),
+#     model="gpt-4o-mini",
+#     api_base=os.getenv("OPENAI_API_BASE"),
+#     api_key=os.getenv("OPENAI_API_KEY"),
+#     is_chat_model=True,
+# )
+llm = DeepSeek(model="DeepSeek-R1",
+               output_parser=get_sql_output_parser(),
+               api_base=os.getenv("DEEPSEEK_API_BASE"),
+               api_key=os.getenv("DEEPSEEK_API_KEY"),
+               is_chat_model=True,
+               )
 sql_query_engine = RetrieverQueryEngine.from_args(
     retriever=retriever,
-    response_synthesizer=get_response_synthesizer(llm=OpenAI(
-        output_parser=get_sql_output_parser(),
-        model="gpt-4o-mini",
-        api_base=os.getenv("OPENAI_API_BASE"),
-        api_key=os.getenv("OPENAI_API_KEY"),
-        is_chat_model=True,
-    ), use_async=True,
-        # output_cls=Text2SQL
-    ),
+    response_synthesizer=get_response_synthesizer(llm, use_async=True,
+                                                  # output_cls=SQL
+                                                  ),
     node_postprocessors=[rerank],
     callback_manager=callback_manager,
 
@@ -106,6 +116,8 @@ async def sql_simple(query: Query):
     res = await sql_full(query)
     data = str(res)
     print(data)
+    data = remove_think_tags(data)
+    print(data)
     return JSONResponse(
         content=eval(data),
         status_code=200,
@@ -132,6 +144,14 @@ async def prompt(query: str) -> str | None:
                         给定这个信息，请回答问题：{query}
                         """
     return prompt
+
+
+def remove_think_tags(data):
+    # 使用正则表达式移除 <think> 和 </think> 标签
+    data = re.sub(r"<think>.*?</think>", "", data, flags=re.DOTALL)
+    # 去除多余的空行和空格
+    data = "\n".join(line.strip() for line in data.splitlines() if line.strip())
+    return data
 
 
 async def generate(query: str, prompt: str) -> AsyncGenerator[str, None]:
