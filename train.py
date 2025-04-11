@@ -1,10 +1,7 @@
 import asyncio
-import cProfile
 import logging
 import os
-import pstats
 import sys
-import textwrap
 
 import dotenv
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext, Settings, Document
