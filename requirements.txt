@@ -167,6 +167,7 @@ httpx==0.28.1
     #   anthropic
     #   chainlit
     #   langfuse
+    #   langsmith
     #   literalai
     #   llama-cloud
     #   llama-index-core
@@ -213,8 +214,24 @@ joblib==1.4.2
     # via
     #   nltk
     #   scikit-learn
+jsonpatch==1.33
+    # via langchain-core
+jsonpointer==3.0.0
+    # via jsonpatch
+langchain==0.3.23
+    # via llama (pyproject.toml)
+langchain-core==0.3.51
+    # via
+    #   langchain
+    #   langchain-text-splitters
+langchain-text-splitters==0.3.8
+    # via langchain
 langfuse==2.60.2
     # via llama-index-callbacks-langfuse
+langsmith==0.3.30
+    # via
+    #   langchain
+    #   langchain-core
 lazify==0.4.0
     # via chainlit
 literalai==0.1.201
@@ -252,6 +269,7 @@ llama-index-core==0.12.30
     #   llama-index-llms-openai-like
     #   llama-index-llms-xinference
     #   llama-index-multi-modal-llms-openai
+    #   llama-index-output-parsers-langchain
     #   llama-index-postprocessor-flag-embedding-reranker
     #   llama-index-program-openai
     #   llama-index-question-gen-openai
@@ -287,6 +305,8 @@ llama-index-llms-xinference==0.3.0
     # via llama (pyproject.toml)
 llama-index-multi-modal-llms-openai==0.4.3
     # via llama-index
+llama-index-output-parsers-langchain==0.3.0
+    # via llama (pyproject.toml)
 llama-index-postprocessor-flag-embedding-reranker==0.3.0
     # via llama (pyproject.toml)
 llama-index-program-openai==0.3.1
@@ -596,13 +616,17 @@ opentelemetry-util-http==0.52b1
     # via
     #   opentelemetry-instrumentation-requests
     #   opentelemetry-instrumentation-urllib3
+orjson==3.10.16
+    # via langsmith
 packaging==24.2
     # via
     #   accelerate
     #   chainlit
     #   datasets
     #   huggingface-hub
+    #   langchain-core
     #   langfuse
+    #   langsmith
     #   literalai
     #   marshmallow
     #   opentelemetry-instrumentation
@@ -654,7 +678,10 @@ pydantic==2.11.3
     #   banks
     #   chainlit
     #   fastapi
+    #   langchain
+    #   langchain-core
     #   langfuse
+    #   langsmith
     #   literalai
     #   llama-cloud
     #   llama-cloud-services
@@ -708,6 +735,8 @@ pyyaml==6.0.2
     #   datasets
     #   huggingface-hub
     #   ir-datasets
+    #   langchain
+    #   langchain-core
     #   llama-deploy
     #   llama-index-core
     #   peft
@@ -725,12 +754,17 @@ requests==2.32.3
     #   huggingface-hub
     #   inscriptis
     #   ir-datasets
+    #   langchain
     #   langfuse
+    #   langsmith
     #   llama-index-core
     #   opentelemetry-exporter-otlp-proto-http
     #   posthog
+    #   requests-toolbelt
     #   tiktoken
     #   transformers
+requests-toolbelt==1.0.0
+    # via langsmith
 safetensors==0.5.3
     # via
     #   accelerate
@@ -771,6 +805,7 @@ soupsieve==2.6
 sqlalchemy==2.0.40
     # via
     #   llama (pyproject.toml)
+    #   langchain
     #   llama-index-core
 sse-starlette==2.2.1
     # via mcp
@@ -788,6 +823,7 @@ syncer==2.0.3
     # via chainlit
 tenacity==8.5.0
     # via
+    #   langchain-core
     #   llama-index-core
     #   traceloop-sdk
 threadpoolctl==3.6.0
@@ -840,6 +876,7 @@ typing-extensions==4.13.1
     #   beautifulsoup4
     #   fastapi
     #   huggingface-hub
+    #   langchain-core
     #   llama-deploy
     #   llama-index-core
     #   openai
@@ -896,3 +933,5 @@ zipp==3.21.0
     # via importlib-metadata
 zlib-state==0.1.9
     # via ir-datasets
+zstandard==0.23.0
+    # via langsmith

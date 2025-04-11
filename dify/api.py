@@ -1,27 +1,26 @@
-import json
+import os
 import os
 import re
+import sys
 from typing import AsyncGenerator
 
 import nest_asyncio
+import uvicorn
 from anthropic import BaseModel
-from fastapi import FastAPI, Body
-from fastapi.encoders import jsonable_encoder
-from llama_index.core import QueryBundle, ChatPromptTemplate, get_response_synthesizer, Response
+from fastapi import FastAPI
+from llama_index.core import QueryBundle, ChatPromptTemplate, get_response_synthesizer
 from llama_index.core.base.llms.types import ChatMessage, MessageRole
-from llama_index.core.base.response.schema import PydanticResponse
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.schema import MetadataMode
 from llama_index.llms.deepseek import DeepSeek
-from llama_index.llms.openai import OpenAI
-from pydantic import Field
-
 from sse_starlette import EventSourceResponse
 from starlette.responses import StreamingResponse, JSONResponse
 
-from common.default import get_default_query_engine, get_default_llm, get_text2sql_query_engine, get_default_retriever, \
-    get_default_chat_response_synthesizer, get_default_rerank, get_default_callback_manager, get_sql_output_parser, SQL
-import uvicorn
+project_root = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(project_root)
+sys.path.append(os.path.dirname(project_root))
+from common.default import get_default_retriever, \
+    get_default_chat_response_synthesizer, get_default_rerank, get_default_callback_manager, get_sql_output_parser
 
 nest_asyncio.apply()
 
@@ -164,4 +163,4 @@ async def generate(query: str, prompt: str) -> AsyncGenerator[str, None]:
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=int(os.getenv("DIFY_PORT")))
