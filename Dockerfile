@@ -5,5 +5,6 @@ ENV UV_SYSTEM_PYTHON=1
 EXPOSE 5892
 EXPOSE 5891
 RUN /bin/bash -c "source .venv/bin/activate"
-#CMD ["chainlit", "run", "chainlit_odr/odr.py", "--port", "5892","--host","0.0.0.0","--headless", "--debug"]
-CMD ["uv","run","dify/api.py","--offline" ]
+RUN uv sync --extra cpu
+CMD ["uv","run","--extra","cpu","chainlit", "run", "chainlit_odr/odr.py", "--port", "5892","--host","0.0.0.0","--headless", "--debug"]
+#CMD ["uv","run","--extra","cpu","dify/api.py" ]
