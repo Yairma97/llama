@@ -3,7 +3,9 @@ from pymilvus import connections, utility, Collection
 
 MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 
-def export_milvus_data(host='localhost', port='19530', export_dir='./milvus_data', exclude_fields=None):
+
+def export_milvus_data(host='localhost', port='19530', export_dir='./milvus_data', list_collections=None,
+                       exclude_fields=None):
     """
     导出Milvus数据（排除指定字段）
     :param exclude_fields: 要排除的字段列表，默认排除content_vector
@@ -17,7 +19,10 @@ def export_milvus_data(host='localhost', port='19530', export_dir='./milvus_data
         import os
         os.makedirs(export_dir, exist_ok=True)
 
-        for collection_name in utility.list_collections():
+        if list_collections is None:
+            list_collections = utility.list_collections()
+
+        for collection_name in list_collections:
             print(f"\nProcessing: {collection_name}")
 
             col = Collection(collection_name)
@@ -134,6 +139,7 @@ if __name__ == "__main__":
     export_milvus_data(
         host="localhost",
         port="19530",
-        export_dir="./milvus_backup",
+        export_dir="./data",
+        list_collections=["dify"],
         exclude_fields=["content_vector", "optional_bin_field"]  # 可配置多个排除字段
     )

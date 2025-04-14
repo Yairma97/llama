@@ -125,7 +125,7 @@ def get_default_embed_model() -> BaseEmbedding:
 
 def get_default_vector_store() -> BasePydanticVectorStore:
     return MilvusVectorStore(
-        collection_name='odr',
+        collection_name=os.getenv("COLLECTION_NAME"),
         dim=1024,
         uri=os.getenv("MILVUS_URL"),
         enable_sparse=True,
@@ -181,25 +181,6 @@ def get_default_query_engine() -> BaseQueryEngine:
     return RetrieverQueryEngine.from_args(
         retriever=get_default_retriever(),
         response_synthesizer=get_default_chat_response_synthesizer(),
-        node_postprocessors=[get_default_rerank()],
-        callback_manager=get_default_callback_manager(),
-    )
-
-
-def get_text2sql_query_engine() -> BaseQueryEngine:
-    llm = OpenAI(
-        output_parser=get_sql_output_parser(),
-        model="gpt-4o-mini",
-        api_base=os.getenv("OPENAI_API_BASE"),
-        api_key=os.getenv("OPENAI_API_KEY"),
-        is_chat_model=True,
-        streaming=True
-    )
-    response_synthesizer = get_response_synthesizer(llm=llm, use_async=True, streaming=True,
-                                                    callback_manager=get_default_callback_manager())
-    return RetrieverQueryEngine.from_args(
-        retriever=get_default_retriever(),
-        response_synthesizer=response_synthesizer,
         node_postprocessors=[get_default_rerank()],
         callback_manager=get_default_callback_manager(),
     )
