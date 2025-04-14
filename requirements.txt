@@ -40,8 +40,6 @@ asgiref==3.8.1
     # via llama-deploy
 asyncer==0.0.7
     # via chainlit
-asyncpg==0.30.0
-    # via llama (pyproject.toml)
 attrs==25.3.0
     # via aiohttp
 backoff==2.2.1
@@ -64,8 +62,6 @@ certifi==2025.1.31
     #   httpx
     #   llama-cloud
     #   requests
-cffi==1.17.1
-    # via cryptography
 chainlit==2.4.400
     # via llama (pyproject.toml)
 charset-normalizer==3.4.1
@@ -82,8 +78,6 @@ colorama==0.4.6
     # via
     #   griffe
     #   traceloop-sdk
-cryptography==44.0.2
-    # via llama (pyproject.toml)
 dataclasses-json==0.6.7
     # via
     #   chainlit
@@ -110,8 +104,6 @@ distro==1.9.0
     #   anthropic
     #   openai
     #   posthog
-et-xmlfile==2.0.0
-    # via openpyxl
 fastapi==0.115.12
     # via
     #   llama (pyproject.toml)
@@ -386,8 +378,6 @@ openai==1.72.0
     #   llama-index-agent-openai
     #   llama-index-embeddings-openai
     #   llama-index-llms-openai
-openpyxl==3.1.5
-    # via llama (pyproject.toml)
 opentelemetry-api==1.31.1
     # via
     #   opentelemetry-exporter-otlp-proto-grpc
@@ -648,8 +638,6 @@ platformdirs==4.3.7
     # via
     #   banks
     #   llama-cloud-services
-ply==3.11
-    # via simple-ddl-parser
 posthog==3.23.0
     # via traceloop-sdk
 propcache==0.3.1
@@ -670,8 +658,6 @@ pyarrow==19.0.1
     # via
     #   datasets
     #   ir-datasets
-pycparser==2.22
-    # via cffi
 pydantic==2.11.3
     # via
     #   anthropic
@@ -785,8 +771,6 @@ sentencepiece==0.2.0
     # via flagembedding
 setuptools==78.1.0
     # via pymilvus
-simple-ddl-parser==1.7.1
-    # via llama (pyproject.toml)
 simple-websocket==1.1.0
     # via python-engineio
 six==1.17.0
@@ -841,7 +825,6 @@ tomli==2.2.1
     # via chainlit
 torch==2.2.2
     # via
-    #   llama (pyproject.toml)
     #   accelerate
     #   flagembedding
     #   peft
